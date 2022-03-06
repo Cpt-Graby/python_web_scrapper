@@ -1,22 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 import random
-import datetime
 import time
 
 random.seed(60)
 
 
 def get_page(url):
-  """
-  Simple funtion that get the url with requests and return a bs4 object. 
-  
-  :return: bs4 object
-  """
+    """
+      Simple funtion that get the url with requests and return a bs4 object.
+      :param  (str): The string of the url
+      :return: bs4 object
+      """
     try:
         req = requests.get(url)
         return BeautifulSoup(req.text, 'html.parser')
-    except:
+    except requests.exceptions.RequestException:
         print("Could load the page: {}".format(url))
 
 
@@ -28,37 +27,39 @@ def get_link_dicegrimorium():
     bs = get_page('https://dicegrimorium.com/free-rpg-map-library/')
     try:
         content_images = bs.find_all('figure', {'class': 'wp-block-image size-large'})
-        links = []
+        links_page = []
         for content in content_images:
-            links.append(content.find('a').get('href'))
-        return links
+            links_page.append(content.find('a').get('href'))
+        return links_page
     except:
         print("""Some thing went wrong at the import of 'figure',
          {'class': 'wp-block-image size-large'}""")
 
 
-def dl_zip_dicegrimorium(url, title, filetype = ".zip"):
-  """
-  Function that download the Zip element that was under the url
-  """
-  
+def dl_zip_dicegrimorium(url, title):
+    """
+
+    :param url:
+    :param title:
+    :return:
+    """
     try:
         r = requests.get(url, allow_redirects=True)
-        with open(title + filetype, 'wb') as dl_file:
+        with open(title + ".zip", 'wb') as dl_file:
             dl_file.write(r.content)
     except:
         print(f'Fail download: {title}')
 
 
-def import_link_zip_dicegrimorium(links):
-  """
-  Given a list, this function will get all the href off the zip file in the url that are in the list.
-  """
+def import_link_zip_dicegrimorium(links_pages):
+    """
+     Given a list, this function will get all the href off the zip file in the url that are in the list.
+     """
     list_dl = []
     list_wait_time = []
-    total_dl = len(links)
+    total_dl = len(links_pages)
     iteration = 1
-    for i in links:
+    for i in links_pages:
         index_fail = 0
         if index_fail > 4:
             break
@@ -84,6 +85,12 @@ def import_link_zip_dicegrimorium(links):
             print(f"Somethig went wrong with the {iteration}:{i}.\n")
             index_fail += 1
     return list_dl
+
+
+def main_dicegrimorium():
+    all_links = get_link_dicegrimorium()
+    list_zip = import_link_zip_dicegrimorium(all_links)
+    return None
 
 
 links = get_link_dicegrimorium()
